@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Rotating Model with Three.js</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r124/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body { margin: 0; }
         canvas { display: block; }
@@ -13,86 +13,42 @@
 <body>
     <script>
         // Создание сцены, камеры и рендерера
-        function createScene() {
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 100);
-            camera.position.z = 30;
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-            const renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
+        // Добавление света
+        const light = new THREE.PointLight(0xFFFFFF, 1);
+        light.position.set(10, 10, 10);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0x404040)); // Мягкий свет
 
-            const light = new THREE.PointLight(0xFFFFFF, 0.75);
-            light.position.set(-15, -10, 30);
-            scene.add(light);
+        // Определение координат для 3D-модели (куб)
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const material = new THREE.MeshPhongMaterial({ color: 0xad0c00 });
+        const cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
 
-            return { scene, camera, renderer };
-        }
-
-        // Определение координат для 3D-модели
-        function useCoordinates() {
-            const vertices = [
-                new THREE.Vector3(0, 0, 0),
-                new THREE.Vector3(0, 5, -1.5),
-                new THREE.Vector3(5, 5, 0),
-                new THREE.Vector3(5, 0, 0),
-                new THREE.Vector3(0, 0, 5),
-                new THREE.Vector3(0, 5, 5),
-                new THREE.Vector3(5, 5, 5),
-                new THREE.Vector3(5, 0, 5)
-            ];
-            const trianglesIndexes = [
-                0, 1, 2,
-                0, 2, 3,
-                0, 4, 5,
-                0, 5, 1,
-                1, 5, 6,
-                1, 6, 2,
-                2, 6, 7,
-                2, 7, 3,
-                3, 7, 4,
-                3, 4, 0,
-                4, 7, 6,
-                4, 6, 5
-            ];
-            return { vertices, trianglesIndexes };
-        }
-
-        // Создание меша
-        function createMesh(coordinatesList, trianglesIndexes) {
-            const geo = new THREE.Geometry();
-            for (let i = 0; i < trianglesIndexes.length; i += 3) {
-                geo.vertices.push(
-                    coordinatesList[trianglesIndexes[i]],
-                    coordinatesList[trianglesIndexes[i + 1]],
-                    coordinatesList[trianglesIndexes[i + 2]]
-                );
-                geo.faces.push(new THREE.Face3(i, i + 1, i + 2));
-            }
-            geo.computeVertexNormals();
-            const material = new THREE.MeshPhongMaterial({ color: 0xad0c00 });
-            const mesh = new THREE.Mesh(geo, material);
-            return mesh;
-        }
+        camera.position.z = 5;
 
         // Анимация
         const animate = function () {
             requestAnimationFrame(animate);
-            mesh.rotation.y += 0.01; // Увеличьте значение для более быстрого вращения
+            cube.rotation.x += 0.01; // Вращение по оси X
+            cube.rotation.y += 0.01; // Вращение по оси Y
             renderer.render(scene, camera);
         };
 
-        // Инициализация
-        function init() {
-            const { scene, camera, renderer } = createScene();
-            const { vertices, trianglesIndexes } = useCoordinates();
-            const mesh = createMesh(vertices, trianglesIndexes);
-            scene.add(mesh);
-            
-            animate();
-        }
+        animate();
 
-        init();
+        // Обработка изменения размера окна
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     </script>
 </body>
 </html>
